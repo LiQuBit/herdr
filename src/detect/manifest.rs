@@ -1542,5 +1542,53 @@ fn line_start_offset(content: &str, lines: &[&str], index: usize) -> usize {
         .min(content.len())
 }
 
+#[allow(dead_code)]
+pub(crate) fn is_antigravity_manifest_alias(name: &str) -> bool {
+    let cache = manifest_cache();
+    let guard = match cache.read() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    for (agent, loaded) in &guard.manifests {
+        if *agent == Agent::Antigravity {
+            if let Some(loaded) = loaded {
+                if loaded.manifest.id.eq_ignore_ascii_case(name)
+                    || loaded
+                        .manifest
+                        .aliases
+                        .iter()
+                        .any(|alias| super::path_basename(alias).eq_ignore_ascii_case(name))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
+pub(crate) fn lookup_agent_from_manifests(name: &str) -> Option<Agent> {
+    let basename = super::path_basename(name);
+    let cache = manifest_cache();
+    let guard = match cache.read() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    for (agent, loaded) in &guard.manifests {
+        if let Some(loaded) = loaded {
+            if loaded.manifest.id.eq_ignore_ascii_case(basename)
+                || loaded
+                    .manifest
+                    .aliases
+                    .iter()
+                    .any(|alias| super::path_basename(alias).eq_ignore_ascii_case(basename))
+            {
+                return Some(*agent);
+            }
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests;

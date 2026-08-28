@@ -146,7 +146,7 @@ pub fn agent_label(agent: Agent) -> &'static str {
     }
 }
 
-pub fn interactive_agent_executable(agent: Agent) -> &'static str {
+pub fn default_agent_executable(agent: Agent) -> &'static str {
     match agent {
         Agent::Pi => "pi",
         Agent::Claude => "claude",
@@ -180,6 +180,164 @@ pub fn interactive_agent_executable(agent: Agent) -> &'static str {
     }
 }
 
+pub fn agent_env_var_command(agent: Agent) -> Option<String> {
+    let env_vars: &[&str] = match agent {
+        Agent::Pi => &["HERDR_PI_COMMAND", "PI_COMMAND", "PI_BIN"],
+        Agent::Claude => &[
+            "HERDR_CLAUDE_COMMAND",
+            "CLAUDE_COMMAND",
+            "HERDR_CLAUDE_CODE_COMMAND",
+            "CLAUDE_CODE_COMMAND",
+            "CLAUDE_BIN",
+        ],
+        Agent::Codex => &["HERDR_CODEX_COMMAND", "CODEX_COMMAND", "CODEX_BIN"],
+        Agent::Gemini => &["HERDR_GEMINI_COMMAND", "GEMINI_COMMAND", "GEMINI_BIN"],
+        Agent::Cursor => &[
+            "HERDR_CURSOR_COMMAND",
+            "CURSOR_COMMAND",
+            "HERDR_CURSOR_AGENT_COMMAND",
+            "CURSOR_AGENT_COMMAND",
+            "CURSOR_BIN",
+        ],
+        Agent::Devin => &[
+            "HERDR_DEVIN_COMMAND",
+            "DEVIN_COMMAND",
+            "HERDR_DEVIN_CLI_COMMAND",
+            "DEVIN_CLI_COMMAND",
+            "DEVIN_BIN",
+        ],
+        Agent::Antigravity => &[
+            "HERDR_ANTIGRAVITY_COMMAND",
+            "ANTIGRAVITY_COMMAND",
+            "HERDR_AGY_COMMAND",
+            "AGY_COMMAND",
+            "AGY_BIN",
+            "ANTIGRAVITY_BIN",
+        ],
+        Agent::Cline => &["HERDR_CLINE_COMMAND", "CLINE_COMMAND", "CLINE_BIN"],
+        Agent::Omp => &["HERDR_OMP_COMMAND", "OMP_COMMAND", "OMP_BIN"],
+        Agent::Mastracode => &[
+            "HERDR_MASTRACODE_COMMAND",
+            "MASTRACODE_COMMAND",
+            "HERDR_MASTRA_CODE_COMMAND",
+            "MASTRA_CODE_COMMAND",
+            "MASTRACODE_BIN",
+        ],
+        Agent::OpenCode => &[
+            "HERDR_OPENCODE_COMMAND",
+            "OPENCODE_COMMAND",
+            "HERDR_OPEN_CODE_COMMAND",
+            "OPEN_CODE_COMMAND",
+            "OPENCODE_BIN",
+        ],
+        Agent::GithubCopilot => &[
+            "HERDR_COPILOT_COMMAND",
+            "COPILOT_COMMAND",
+            "HERDR_GITHUB_COPILOT_COMMAND",
+            "GITHUB_COPILOT_COMMAND",
+            "COPILOT_BIN",
+        ],
+        Agent::Kimi => &[
+            "HERDR_KIMI_COMMAND",
+            "KIMI_COMMAND",
+            "HERDR_KIMI_CODE_COMMAND",
+            "KIMI_CODE_COMMAND",
+            "KIMI_BIN",
+        ],
+        Agent::Kiro => &[
+            "HERDR_KIRO_COMMAND",
+            "KIRO_COMMAND",
+            "HERDR_KIRO_CLI_COMMAND",
+            "KIRO_CLI_COMMAND",
+            "KIRO_BIN",
+        ],
+        Agent::Droid => &["HERDR_DROID_COMMAND", "DROID_COMMAND", "DROID_BIN"],
+        Agent::Amp => &[
+            "HERDR_AMP_COMMAND",
+            "AMP_COMMAND",
+            "HERDR_AMP_LOCAL_COMMAND",
+            "AMP_LOCAL_COMMAND",
+            "AMP_BIN",
+        ],
+        Agent::Grok => &[
+            "HERDR_GROK_COMMAND",
+            "GROK_COMMAND",
+            "HERDR_GROK_BUILD_COMMAND",
+            "GROK_BUILD_COMMAND",
+            "GROK_BIN",
+        ],
+        Agent::Hermes => &[
+            "HERDR_HERMES_COMMAND",
+            "HERMES_COMMAND",
+            "HERDR_HERMES_AGENT_COMMAND",
+            "HERMES_AGENT_COMMAND",
+            "HERMES_BIN",
+        ],
+        Agent::Kilo => &[
+            "HERDR_KILO_COMMAND",
+            "KILO_COMMAND",
+            "HERDR_KILO_CODE_COMMAND",
+            "KILO_CODE_COMMAND",
+            "KILO_BIN",
+        ],
+        Agent::Qodercli => &[
+            "HERDR_QODERCLI_COMMAND",
+            "QODERCLI_COMMAND",
+            "HERDR_QODER_COMMAND",
+            "QODER_COMMAND",
+            "QODERCLI_BIN",
+        ],
+        Agent::Qwen => &[
+            "HERDR_QWEN_COMMAND",
+            "QWEN_COMMAND",
+            "HERDR_QWEN_CODE_COMMAND",
+            "QWEN_CODE_COMMAND",
+            "QWEN_BIN",
+        ],
+        Agent::Maki => &["HERDR_MAKI_COMMAND", "MAKI_COMMAND", "MAKI_BIN"],
+        Agent::Muse => &[
+            "HERDR_MUSE_COMMAND",
+            "MUSE_COMMAND",
+            "HERDR_MUSE_CODE_COMMAND",
+            "MUSE_CODE_COMMAND",
+            "HERDR_MUSE_CLI_COMMAND",
+            "MUSE_CLI_COMMAND",
+            "MUSE_BIN",
+        ],
+    };
+
+    for var in env_vars {
+        if let Ok(val) = std::env::var(var) {
+            let trimmed = val.trim();
+            if !trimmed.is_empty() {
+                return Some(trimmed.to_string());
+            }
+        }
+    }
+    None
+}
+
+pub fn agent_command(agent: Agent) -> String {
+    if let Some(cmd) = agent_env_var_command(agent) {
+        return cmd;
+    }
+    if let Some(cmd) = crate::config::configured_agent_command(agent) {
+        let trimmed = cmd.trim();
+        if !trimmed.is_empty() {
+            return trimmed.to_string();
+        }
+    }
+    default_agent_executable(agent).to_string()
+}
+
+pub fn antigravity_command() -> String {
+    agent_command(Agent::Antigravity)
+}
+
+pub fn interactive_agent_executable(agent: Agent) -> String {
+    agent_command(agent)
+}
+
 pub fn parse_agent_label(agent: &str) -> Option<Agent> {
     let name = normalized_agent_lookup_name(agent);
     parse_canonical_agent_label(&name).or_else(|| lookup_agent(&name))
@@ -192,6 +350,19 @@ pub(crate) fn parse_canonical_agent_label(label: &str) -> Option<Agent> {
 
 fn lookup_agent(name: &str) -> Option<Agent> {
     let name = path_basename(name);
+
+    for &agent in &Agent::ALL {
+        if let Some(env_cmd) = agent_env_var_command(agent) {
+            if path_basename(&env_cmd).eq_ignore_ascii_case(name) {
+                return Some(agent);
+            }
+        }
+    }
+
+    if let Some(agent) = crate::config::is_configured_agent_alias(name) {
+        return Some(agent);
+    }
+
     match name {
         "pi" => Some(Agent::Pi),
         "claude" | "claude-code" => Some(Agent::Claude),
@@ -199,7 +370,7 @@ fn lookup_agent(name: &str) -> Option<Agent> {
         "gemini" => Some(Agent::Gemini),
         "cursor" | "cursor-agent" => Some(Agent::Cursor),
         "devin" | "devin-cli" | "devin cli" => Some(Agent::Devin),
-        "agy" | "antigravity" | "antigravity-cli" => Some(Agent::Antigravity),
+        "agy" | "antigravity" | "antigravity-cli" | "agycli" => Some(Agent::Antigravity),
         "cline" => Some(Agent::Cline),
         "omp" => Some(Agent::Omp),
         "mastracode" | "mastra-code" | "mastra code" => Some(Agent::Mastracode),
@@ -217,7 +388,7 @@ fn lookup_agent(name: &str) -> Option<Agent> {
         "maki" => Some(Agent::Maki),
         "muse" | "muse-code" | "muse-cli" => Some(Agent::Muse),
         _ if is_muse_versioned_binary(name) => Some(Agent::Muse),
-        _ => None,
+        _ => manifest::lookup_agent_from_manifests(name),
     }
 }
 
@@ -661,7 +832,7 @@ fn normalized_agent_lookup_name(name: &str) -> String {
     name
 }
 
-fn path_basename(path: &str) -> &str {
+pub(crate) fn path_basename(path: &str) -> &str {
     path.rsplit(['/', '\\'])
         .find(|component| !component.is_empty())
         .unwrap_or(path)
@@ -764,6 +935,7 @@ mod tests {
         assert_eq!(identify_agent("devin-cli"), Some(Agent::Devin));
         assert_eq!(identify_agent("agy"), Some(Agent::Antigravity));
         assert_eq!(identify_agent("antigravity-cli"), Some(Agent::Antigravity));
+        assert_eq!(identify_agent("agycli"), Some(Agent::Antigravity));
         assert_eq!(identify_agent("cline"), Some(Agent::Cline));
         assert_eq!(identify_agent("omp"), Some(Agent::Omp));
         assert_eq!(identify_agent("mastracode"), Some(Agent::Mastracode));
@@ -810,6 +982,7 @@ mod tests {
         assert_eq!(parse_agent_label("devin-cli"), Some(Agent::Devin));
         assert_eq!(parse_agent_label("agy"), Some(Agent::Antigravity));
         assert_eq!(parse_agent_label("antigravity"), Some(Agent::Antigravity));
+        assert_eq!(parse_agent_label("agycli"), Some(Agent::Antigravity));
         assert_eq!(parse_agent_label("omp"), Some(Agent::Omp));
         assert_eq!(parse_agent_label("mastracode"), Some(Agent::Mastracode));
         assert_eq!(parse_agent_label("mastra code"), Some(Agent::Mastracode));
@@ -929,6 +1102,114 @@ mod tests {
         assert_eq!(identify_agent("CLAUDE"), Some(Agent::Claude));
         assert_eq!(identify_agent("Codex"), Some(Agent::Codex));
         assert_eq!(identify_agent("Devin"), Some(Agent::Devin));
+    }
+
+    #[test]
+    fn agent_custom_command_and_alias_detection() {
+        use crate::config::{set_active_agents_config, AgentCommandConfig, AgentsConfig};
+
+        // Reset before test
+        set_active_agents_config(AgentsConfig::default());
+        assert_eq!(antigravity_command(), "agy");
+        assert_eq!(agent_command(Agent::Claude), "claude");
+        assert_eq!(identify_agent("agy"), Some(Agent::Antigravity));
+        assert_eq!(identify_agent("my-custom-antigravity"), None);
+        assert_eq!(identify_agent("my-custom-claude"), None);
+
+        // Configure custom command and aliases for multiple agents
+        let mut config = AgentsConfig::default();
+        config.agents.insert(
+            "antigravity".into(),
+            AgentCommandConfig {
+                command: Some("/usr/local/bin/my-custom-antigravity".into()),
+                aliases: vec!["agy-alias".into(), "ag-agent".into()],
+            },
+        );
+        config.agents.insert(
+            "claude".into(),
+            AgentCommandConfig {
+                command: Some("/opt/bin/my-claude".into()),
+                aliases: vec!["claude-dev".into()],
+            },
+        );
+        config.agents.insert(
+            "opencode".into(),
+            AgentCommandConfig {
+                command: Some("opencode-nightly".into()),
+                aliases: vec!["oc-custom".into()],
+            },
+        );
+        set_active_agents_config(config);
+
+        assert_eq!(
+            antigravity_command(),
+            "/usr/local/bin/my-custom-antigravity"
+        );
+        assert_eq!(
+            interactive_agent_executable(Agent::Antigravity),
+            "/usr/local/bin/my-custom-antigravity"
+        );
+        assert_eq!(agent_command(Agent::Claude), "/opt/bin/my-claude");
+        assert_eq!(
+            interactive_agent_executable(Agent::Claude),
+            "/opt/bin/my-claude"
+        );
+        assert_eq!(agent_command(Agent::OpenCode), "opencode-nightly");
+
+        assert_eq!(
+            identify_agent("my-custom-antigravity"),
+            Some(Agent::Antigravity)
+        );
+        assert_eq!(
+            identify_agent("/usr/local/bin/my-custom-antigravity"),
+            Some(Agent::Antigravity)
+        );
+        assert_eq!(identify_agent("agy-alias"), Some(Agent::Antigravity));
+        assert_eq!(identify_agent("ag-agent"), Some(Agent::Antigravity));
+
+        assert_eq!(identify_agent("my-claude"), Some(Agent::Claude));
+        assert_eq!(identify_agent("/opt/bin/my-claude"), Some(Agent::Claude));
+        assert_eq!(identify_agent("claude-dev"), Some(Agent::Claude));
+
+        assert_eq!(identify_agent("opencode-nightly"), Some(Agent::OpenCode));
+        assert_eq!(identify_agent("oc-custom"), Some(Agent::OpenCode));
+
+        // Built-in names still recognized
+        assert_eq!(identify_agent("agy"), Some(Agent::Antigravity));
+        assert_eq!(identify_agent("antigravity"), Some(Agent::Antigravity));
+        assert_eq!(identify_agent("claude"), Some(Agent::Claude));
+        assert_eq!(identify_agent("opencode"), Some(Agent::OpenCode));
+
+        // Reset after test
+        set_active_agents_config(AgentsConfig::default());
+    }
+
+    #[test]
+    fn agent_env_var_override() {
+        use crate::config::{set_active_agents_config, AgentsConfig};
+
+        set_active_agents_config(AgentsConfig::default());
+        std::env::set_var("HERDR_ANTIGRAVITY_COMMAND", "agy-env-custom");
+        std::env::set_var("HERDR_CLAUDE_COMMAND", "claude-env-custom");
+
+        assert_eq!(antigravity_command(), "agy-env-custom");
+        assert_eq!(agent_command(Agent::Claude), "claude-env-custom");
+        assert_eq!(identify_agent("agy-env-custom"), Some(Agent::Antigravity));
+        assert_eq!(identify_agent("claude-env-custom"), Some(Agent::Claude));
+        assert_eq!(
+            interactive_agent_executable(Agent::Antigravity),
+            "agy-env-custom"
+        );
+        assert_eq!(
+            interactive_agent_executable(Agent::Claude),
+            "claude-env-custom"
+        );
+
+        std::env::remove_var("HERDR_ANTIGRAVITY_COMMAND");
+        std::env::remove_var("HERDR_CLAUDE_COMMAND");
+
+        assert_eq!(antigravity_command(), "agy");
+        assert_eq!(agent_command(Agent::Claude), "claude");
     }
 
     #[test]

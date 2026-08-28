@@ -123,89 +123,122 @@ pub fn plan(source: &str, agent: &str, session_ref: &AgentSessionRef) -> Option<
     let argv = match (source, agent, session_ref.kind) {
         ("herdr:claude", "claude", AgentSessionRefKind::Id) => {
             vec![
-                "claude".into(),
+                crate::detect::agent_command(crate::detect::Agent::Claude),
                 "--resume".into(),
                 session_ref.value.clone(),
             ]
         }
         ("herdr:codex", "codex", AgentSessionRefKind::Id) => {
-            vec!["codex".into(), "resume".into(), session_ref.value.clone()]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Codex),
+                "resume".into(),
+                session_ref.value.clone(),
+            ]
         }
         ("herdr:copilot", "copilot", AgentSessionRefKind::Id) => {
-            vec!["copilot".into(), format!("--resume={}", session_ref.value)]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::GithubCopilot),
+                format!("--resume={}", session_ref.value),
+            ]
         }
         ("herdr:devin", "devin", AgentSessionRefKind::Id) => {
-            vec!["devin".into(), "--resume".into(), session_ref.value.clone()]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Devin),
+                "--resume".into(),
+                session_ref.value.clone(),
+            ]
         }
         ("herdr:droid", "droid", AgentSessionRefKind::Id) => {
-            vec!["droid".into(), "--resume".into(), session_ref.value.clone()]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Droid),
+                "--resume".into(),
+                session_ref.value.clone(),
+            ]
         }
         ("herdr:kimi", "kimi", AgentSessionRefKind::Id) => {
-            vec!["kimi".into(), "--session".into(), session_ref.value.clone()]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Kimi),
+                "--session".into(),
+                session_ref.value.clone(),
+            ]
         }
         ("herdr:mastracode", "mastracode", AgentSessionRefKind::Id) => {
             vec![
-                "mastracode".into(),
+                crate::detect::agent_command(crate::detect::Agent::Mastracode),
                 "--thread".into(),
                 session_ref.value.clone(),
             ]
         }
         ("herdr:pi", "pi", AgentSessionRefKind::Path | AgentSessionRefKind::Id) => {
-            vec!["pi".into(), "--session".into(), session_ref.value.clone()]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Pi),
+                "--session".into(),
+                session_ref.value.clone(),
+            ]
         }
         ("herdr:omp", "omp", AgentSessionRefKind::Path | AgentSessionRefKind::Id) => {
             // omp resume is `-r, --resume=<value>` (ID prefix or path); it has no
             // `--session` flag, unlike pi.
-            vec!["omp".into(), format!("--resume={}", session_ref.value)]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Omp),
+                format!("--resume={}", session_ref.value),
+            ]
         }
         ("herdr:hermes", "hermes", AgentSessionRefKind::Id) => {
             vec![
-                "hermes".into(),
+                crate::detect::agent_command(crate::detect::Agent::Hermes),
                 "--resume".into(),
                 session_ref.value.clone(),
             ]
         }
         ("herdr:opencode", "opencode", AgentSessionRefKind::Id) => {
             vec![
-                "opencode".into(),
+                crate::detect::agent_command(crate::detect::Agent::OpenCode),
                 "--session".into(),
                 session_ref.value.clone(),
             ]
         }
         ("herdr:qodercli", "qodercli", AgentSessionRefKind::Id) => {
             vec![
-                "qodercli".into(),
+                crate::detect::agent_command(crate::detect::Agent::Qodercli),
                 "--resume".into(),
                 session_ref.value.clone(),
             ]
         }
         ("herdr:qwen", "qwen", AgentSessionRefKind::Id) => {
-            vec!["qwen".into(), "--resume".into(), session_ref.value.clone()]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Qwen),
+                "--resume".into(),
+                session_ref.value.clone(),
+            ]
         }
         ("herdr:kilo", "kilo", AgentSessionRefKind::Id) => {
-            vec!["kilo".into(), "--session".into(), session_ref.value.clone()]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Kilo),
+                "--session".into(),
+                session_ref.value.clone(),
+            ]
         }
         ("herdr:cursor", "cursor", AgentSessionRefKind::Id) => {
             vec![
-                if cfg!(windows) {
-                    "cursor-agent.cmd"
-                } else {
-                    "cursor-agent"
-                }
-                .into(),
+                crate::detect::agent_command(crate::detect::Agent::Cursor),
                 "--resume".into(),
                 session_ref.value.clone(),
             ]
         }
         ("herdr:antigravity_cli", "agy", AgentSessionRefKind::Id) => {
             vec![
-                "agy".into(),
+                crate::detect::antigravity_command(),
                 "--conversation".into(),
                 session_ref.value.clone(),
             ]
         }
         ("herdr:grok", "grok", AgentSessionRefKind::Id) => {
-            vec!["grok".into(), "--resume".into(), session_ref.value.clone()]
+            vec![
+                crate::detect::agent_command(crate::detect::Agent::Grok),
+                "--resume".into(),
+                session_ref.value.clone(),
+            ]
         }
         _ => return None,
     };

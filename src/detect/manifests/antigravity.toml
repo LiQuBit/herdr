@@ -1,8 +1,8 @@
 id = "agy"
-version = "2026.06.24.1"
+version = "2026.08.28.1"
 min_engine_version = 1
-updated_at = "2026-06-24T00:00:00Z"
-aliases = ["antigravity", "antigravity-cli"]
+updated_at = "2026-08-28T00:00:00Z"
+aliases = ["antigravity", "antigravity-cli", "agycli"]
 
 [[rules]]
 id = "permission_prompt"
@@ -10,11 +10,33 @@ state = "blocked"
 priority = 300
 region = "whole_recent"
 visible_blocker = true
-contains = ["requesting permission for:"]
 any = [
+  { contains = ["requesting permission for:"] },
   { contains = ["do you want to proceed?"] },
   { contains = ["tab amend", "edit command"] },
+  { contains = ["allow execution"] },
+  { contains = ["allow this change"] },
+  { contains = ["apply this change"] },
 ]
+
+[[rules]]
+id = "question_prompt"
+state = "blocked"
+priority = 250
+region = "whole_recent"
+visible_blocker = true
+any = [
+  { contains = ["press enter to submit"] },
+  { contains = ["enter to select"] },
+]
+
+[[rules]]
+id = "esc_cancel_working"
+state = "working"
+priority = 150
+region = "whole_recent"
+visible_working = true
+contains = ["esc to cancel"]
 
 [[rules]]
 id = "spinner_working"
@@ -22,7 +44,15 @@ state = "working"
 priority = 100
 region = "whole_recent"
 visible_working = true
-line_regex = ['^\s*[\u2800-\u28FF]+\s+\p{Alphabetic}+\w*ing\b']
+line_regex = ['^\s*[\u2800-\u28FF]']
+
+[[rules]]
+id = "activity_working"
+state = "working"
+priority = 95
+region = "bottom_non_empty_lines(8)"
+visible_working = true
+line_regex = ['^\s*▸\s+Thought for\b']
 
 [[rules]]
 id = "background_tasks_working"
@@ -31,3 +61,15 @@ priority = 90
 region = "bottom_non_empty_lines(5)"
 visible_working = true
 line_regex = ['(?i)·\s*[1-9][0-9]*\s+task']
+
+[[rules]]
+id = "prompt_idle"
+state = "idle"
+priority = 50
+region = "bottom_non_empty_lines(5)"
+visible_idle = true
+line_regex = ['^\s*>\s*$']
+not = [
+  { contains = ["esc to cancel"] },
+  { line_regex = ['[\u2800-\u28FF]'] },
+]

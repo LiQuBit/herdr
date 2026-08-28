@@ -406,6 +406,31 @@ fn muse_manifest_requires_complete_live_controls() {
 }
 
 #[test]
+fn antigravity_manifest_working_blocked_and_idle_states() {
+    let working_spinner = explain(Agent::Antigravity, "⣯ Searching the web\nesc to cancel");
+    assert_eq!(working_spinner.state, AgentState::Working);
+    assert!(working_spinner.visible_working);
+
+    let working_thought = explain(
+        Agent::Antigravity,
+        "▸ Thought for 12s\n⣾ Editing file /path/to/file.rs",
+    );
+    assert_eq!(working_thought.state, AgentState::Working);
+    assert!(working_thought.visible_working);
+
+    let permission_prompt = explain(
+        Agent::Antigravity,
+        "requesting permission for:\n  run command: cargo build\ndo you want to proceed?\n› 1. Allow execution\n  2. Cancel",
+    );
+    assert_eq!(permission_prompt.state, AgentState::Blocked);
+    assert!(permission_prompt.visible_blocker);
+
+    let idle_prompt = explain(Agent::Antigravity, "Some output completed.\n\n>");
+    assert_eq!(idle_prompt.state, AgentState::Idle);
+    assert!(idle_prompt.visible_idle);
+}
+
+#[test]
 fn manifest_validation_rejects_unknown_fields_empty_rules_invalid_regions_and_regexes() {
     assert!(parse_manifest(
         r#"

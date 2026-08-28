@@ -1,5 +1,6 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 
+mod agents;
 mod io;
 mod keybinds;
 mod model;
@@ -9,6 +10,12 @@ mod tab_bar;
 mod theme;
 mod window_title;
 
+#[allow(unused_imports)]
+pub use self::agents::{
+    active_agents_config, configured_agent_aliases, configured_agent_command,
+    configured_antigravity_aliases, configured_antigravity_command, is_configured_agent_alias,
+    is_configured_antigravity_alias, parse_agent_key, AgentCommandConfig, AgentsConfig,
+};
 pub use self::{
     io::{
         config_diagnostic_summary, config_dir, config_path, load_live_config,
@@ -36,6 +43,8 @@ pub use self::{
     theme::{parse_color, CustomThemeColors, ModeThemeColors, ThemeConfig, THEME_NAMES},
     window_title::{WindowTitlePart, WindowTitleTemplate, WindowTitleToken},
 };
+
+pub(crate) use self::agents::set_active_agents_config;
 
 pub(crate) use self::keybinds::parse_key_combo;
 pub(crate) use self::{

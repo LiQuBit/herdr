@@ -6,6 +6,7 @@ use super::{model::LoadedConfig, Config, CONFIG_PATH_ENV_VAR};
 
 const KNOWN_TOP_LEVEL_CONFIG_KEYS: &[&str] = &[
     "advanced",
+    "agents",
     "experimental",
     "keys",
     "onboarding",
@@ -137,6 +138,7 @@ impl Config {
                     None,
                 ));
                 diagnostics.extend(config.collect_diagnostics());
+                super::set_active_agents_config(config.agents.clone());
                 LoadedConfig {
                     config,
                     diagnostics,
@@ -349,8 +351,17 @@ fn load_live_config_from_str(content: &str) -> Result<LoadedConfig, Vec<String>>
         &mut invalid_sections,
         |section| config.remote = section,
     );
+    load_live_section(
+        table,
+        "agents",
+        "agents config",
+        &mut diagnostics,
+        &mut invalid_sections,
+        |section| config.agents = section,
+    );
 
     diagnostics.extend(config.theme.diagnostics());
+    super::set_active_agents_config(config.agents.clone());
 
     Ok(LoadedConfig {
         config,
@@ -1107,5 +1118,62 @@ mouse_capture = false
         let (updated, removed) = remove_keybinding_config_sections(content);
         assert!(!removed);
         assert_eq!(updated, content);
+    }
+
+    #[test]
+    fn load_live_config_from_str_parses_agents_section() {
+        let content = r#"
+[agents]
+claude = "custom-claude-shorthand"
+
+[agents.antigravity]
+command = "custom-agy-bin"
+aliases = ["custom-alias-1", "custom-alias-2"]
+
+[agents.gemini]
+command = "custom-gemini-bin"
+aliases = ["gem-dev"]
+"#;
+        let loaded = load_live_config_from_str(content).expect("config should load");
+        assert!(
+            loaded.diagnostics.is_empty(),
+            "unexpected diagnostics: {:?}",
+            loaded.diagnostics
+        );
+        assert_eq!(
+            loaded
+                .config
+                .agents
+                .agent_command(crate::detect::Agent::Claude),
+            Some("custom-claude-shorthand")
+        );
+        assert_eq!(
+            loaded
+                .config
+                .agents
+                .agent_command(crate::detect::Agent::Antigravity),
+            Some("custom-agy-bin")
+        );
+        assert_eq!(
+            loaded
+                .config
+                .agents
+                .agent_aliases(crate::detect::Agent::Antigravity),
+            &["custom-alias-1".to_string(), "custom-alias-2".to_string()]
+        );
+        assert_eq!(
+            loaded
+                .config
+                .agents
+                .agent_command(crate::detect::Agent::Gemini),
+            Some("custom-gemini-bin")
+        );
+        assert_eq!(
+            loaded
+                .config
+                .agents
+                .agent_aliases(crate::detect::Agent::Gemini),
+            &["gem-dev".to_string()]
+        );
     }
 }
